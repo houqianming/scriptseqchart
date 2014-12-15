@@ -8,10 +8,9 @@ participant AppInternalManagerService
 participant AppDeployService
 AppOperationService -> AppOperateService: deployApp(appId,version,isInQueue,repo:true)
 AppOperateService -> AppOperateService: create AppCommand, audit
-AppOperateService --> metaq: send AppCommand
+AppOperateService -> metaq: send AppCommand
 AppCommandConsumer --> metaq: pull AppCommand
-#metaq -> AppOperationService: received,后面异步处理了
-metaq -> AppOperationService: received
+metaq --> AppOperationService: received,后面异步处理了
 AppCommandConsumer -> AppCommandService: runCommand(AppCommand)
 AppCommandService -> AppCommandService: lookup command-bind.properties
 AppCommandService -> AppInternalManagerService: deployApp(appDeployParam)

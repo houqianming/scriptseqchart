@@ -6,6 +6,7 @@ import (
 	"io"
 	"os"
 	"strings"
+	"bytes"
 )
 
 type Participant struct {
@@ -158,9 +159,6 @@ func (chart *char2d) Insert(i, j int, b byte, override bool) {
 		}
 	}
 	old := chart.bytes[i][j]
-	//if old != ' ' {
-	//	fmt.Printf("old=%q, b=%q\n", old, b)
-	//}
 	if override || old == ' ' {
 		if (old == '-' && b == '|') || (old == '|' && b == '-') {
 			chart.bytes[i][j] = '+'
@@ -172,16 +170,20 @@ func (chart *char2d) Insert(i, j int, b byte, override bool) {
 }
 
 func (chart char2d) String() string {
+    var buffer bytes.Buffer
 	for i := 0; i < len(chart.bytes); i++ {
-
+        /*
 		for j := 0; j < len(chart.bytes[i]); j++ {
 			fmt.Printf("%s", string(chart.bytes[i][j]))
 		}
 		fmt.Print("\n")
-
-		//fmt.Printf("%q\n", chart.bytes[i])
+        */
+		//fmt.Printf("%q\n", chart.bytes[i]))
+		//fmt.Sprintf("%q\n", chart.bytes[i]))
+		buffer.Write(chart.bytes[i])
+		buffer.WriteByte('\n')
 	}
-	return ""
+	return buffer.String()
 }
 
 func main() {
@@ -248,8 +250,8 @@ func main() {
 		target := participants[invoke.Target.Name]
 
 		if target.Seqnum > invoker.Seqnum {
-			for x, b := range invoke.Msg {
-				chart.Insert(invokej, invoker.Midpos+1+x, byte(b), true)
+			for x, b := range []byte(invoke.Msg) {
+				chart.Insert(invokej, invoker.Midpos+1+x, b, true)
 			}
 
 			for x := invoker.Midpos + 1; x < target.Midpos-1; x++ {
@@ -260,8 +262,8 @@ func main() {
 			chart.Insert(invokej+1, target.Midpos-1, '>', true)
 			invokej += 2
 		} else if target.Seqnum < invoker.Seqnum {
-			for x, b := range invoke.Msg {
-				chart.Insert(invokej, target.Midpos+1+x, byte(b), true)
+			for x, b := range []byte(invoke.Msg) {
+				chart.Insert(invokej, target.Midpos+1+x, b, true)
 			}
 
 			for x := invoker.Midpos - 1; x > target.Midpos; x-- {
@@ -271,8 +273,8 @@ func main() {
 			chart.Insert(invokej+1, target.Midpos+1, '<', true)
 			invokej += 2
 		} else { //target.Seqnum > invoker.Seqnu
-			for x, b := range invoke.Msg {
-				chart.Insert(invokej+1, target.Midpos+1+4+x, byte(b), true) //note4 对应前面 note3
+			for x, b := range []byte(invoke.Msg) {
+				chart.Insert(invokej+1, target.Midpos+1+4+x, b, true) //note4 对应前面 note3
 			}
 			chart.Insert(invokej, target.Midpos+0, '-', true) //|
 			chart.Insert(invokej, target.Midpos+1, '-', true) //+---.
