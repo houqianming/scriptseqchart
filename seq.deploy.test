@@ -1,16 +1,16 @@
 title com.taobao.juae.service.impl.app.AppOperationServiceImpl.doDeploy(appVersionId, packageVersion, operator)
 participant AppOperationService
 participant AppOperateService
-participant metaq
+participant metaq中文
 participant AppCommandConsumer
 participant AppCommandService
 participant AppInternalManagerService
 participant AppDeployService
 AppOperationService -> AppOperateService: deployApp(appId,version,isInQueue,repo:true)
 AppOperateService -> AppOperateService: create AppCommand, audit
-AppOperateService -> metaq: send AppCommand中文偶数
-AppCommandConsumer --> metaq: pull AppCommand
-metaq --> AppOperationService: received中文字
+AppOperateService -> metaq中文: send AppCommand中文偶数
+AppCommandConsumer --> metaq中文: pull AppCommand
+metaq中文 --> AppOperationService: received中文字
 AppCommandConsumer -> AppCommandService: runCommand(AppCommand) 中文奇偶
 AppCommandService -> AppCommandService: lookup command-bind.properties
 AppCommandService -> AppInternalManagerService: deployApp(appDeployParam)

@@ -7,7 +7,7 @@ import (
 	"io"
 	"os"
 	"strings"
-	//"unicode"
+	"unicode"
 )
 
 type Participant struct {
@@ -171,21 +171,30 @@ func (chart *char2d) Insert(i, j int, b byte, override bool) {
 	}
 }
 
-func (chart char2d) String() string {
+func (chart char2d) String1() string {
 	var buffer bytes.Buffer
 	for i := 0; i < len(chart.bytes); i++ {
-		/*
-			for j := 0; j < len(chart.bytes[i]); j++ {
-				fmt.Printf("%s", string(chart.bytes[i][j]))
-			}
-			fmt.Print("\n")
-		*/
-		//fmt.Printf("%q\n", chart.bytes[i]))
-		//fmt.Sprintf("%q\n", chart.bytes[i]))
 		buffer.Write(chart.bytes[i])
 		buffer.WriteByte('\n')
 	}
 	return buffer.String()
+}
+func (chart char2d) String2() string {
+	var buffer bytes.Buffer
+	for i := 0; i < len(chart.bytes); i++ {
+		for _, c := range string(chart.bytes[i]) {
+			buffer.WriteRune(c)
+			if unicode.Is(unicode.Scripts["Han"], c) {
+			   //因汉字go内部3个字节，文本显示时等宽占2个字符，所以多些一个空格
+			   buffer.WriteByte(' ') 
+			}
+		}
+		buffer.WriteByte('\n')
+	}
+	return buffer.String()
+}
+func (chart char2d) String() string {
+	return chart.String2()
 }
 
 func main() {
@@ -336,9 +345,10 @@ func printRectagle(y, x1, x2 int, name string, chart *char2d) {
 		chart.Insert(y, x, '-', true)
 		chart.Insert(y+2, x, '-', true)
 	}
-	for x, b := range name {
-		chart.Insert(y+1, x1+1+x, byte(b), true)
-	}
+	//for x, b := range name {
+	//	chart.Insert(y+1, x1+1+x, byte(b), true)
+	//}
+	writeMsg(chart, name, y+1, x1+1)
 	chart.Insert(y+0, x1, '+', true)
 	chart.Insert(y+0, x2, '+', true)
 	chart.Insert(y+2, x1, '+', true)
