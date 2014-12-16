@@ -2,11 +2,12 @@ package main
 
 import (
 	"bufio"
+	"bytes"
 	"fmt"
 	"io"
 	"os"
 	"strings"
-	"bytes"
+	//"unicode"
 )
 
 type Participant struct {
@@ -68,7 +69,7 @@ func parse(file string) (title string, partnames []string, participants map[stri
 	seqnum := 0
 	for {
 		line, e := buff.ReadString('\n')
-		if e != nil || io.EOF == err {
+		if e != nil && io.EOF != e {
 			break
 		}
 		line = strings.TrimSpace(line)
@@ -137,6 +138,9 @@ func parse(file string) (title string, partnames []string, participants map[stri
 		invoke.Msg = strings.Join(bm[1:], ":")
 		invacations = append(invacations, invoke)
 
+		if io.EOF == e {
+			break
+		}
 	}
 	return
 }
@@ -159,25 +163,23 @@ func (chart *char2d) Insert(i, j int, b byte, override bool) {
 		}
 	}
 	old := chart.bytes[i][j]
-	if override || old == ' ' {
-		if (old == '-' && b == '|') || (old == '|' && b == '-') {
-			chart.bytes[i][j] = '+'
-			//fmt.Printf("old=%q, b=%q, res= %q \n", old, b, chart.bytes[i][j] )
-		} else {
-			chart.bytes[i][j] = b
-		}
+	if (old == '-' && b == '|') || (old == '|' && b == '-') {
+		chart.bytes[i][j] = '+'
+		//fmt.Printf("old=%q, b=%q, res= %q \n", old, b, chart.bytes[i][j] )
+	} else if override || old == ' ' {
+		chart.bytes[i][j] = b
 	}
 }
 
 func (chart char2d) String() string {
-    var buffer bytes.Buffer
+	var buffer bytes.Buffer
 	for i := 0; i < len(chart.bytes); i++ {
-        /*
-		for j := 0; j < len(chart.bytes[i]); j++ {
-			fmt.Printf("%s", string(chart.bytes[i][j]))
-		}
-		fmt.Print("\n")
-        */
+		/*
+			for j := 0; j < len(chart.bytes[i]); j++ {
+				fmt.Printf("%s", string(chart.bytes[i][j]))
+			}
+			fmt.Print("\n")
+		*/
 		//fmt.Printf("%q\n", chart.bytes[i]))
 		//fmt.Sprintf("%q\n", chart.bytes[i]))
 		buffer.Write(chart.bytes[i])
@@ -250,9 +252,10 @@ func main() {
 		target := participants[invoke.Target.Name]
 
 		if target.Seqnum > invoker.Seqnum {
-			for x, b := range []byte(invoke.Msg) {
-				chart.Insert(invokej, invoker.Midpos+1+x, b, true)
-			}
+			//for x, b := range []byte(invoke.Msg) {
+			//	chart.Insert(invokej, invoker.Midpos+1+x, b, true)
+			//}
+			writeMsg(&chart, invoke.Msg, invokej, invoker.Midpos+1)
 
 			for x := invoker.Midpos + 1; x < target.Midpos-1; x++ {
 				//b := byte(!invoke.IsSync && (x-invoker.Midpos)%2==0 ? ' ' : '-')
@@ -262,9 +265,10 @@ func main() {
 			chart.Insert(invokej+1, target.Midpos-1, '>', true)
 			invokej += 2
 		} else if target.Seqnum < invoker.Seqnum {
-			for x, b := range []byte(invoke.Msg) {
-				chart.Insert(invokej, target.Midpos+1+x, b, true)
-			}
+			//for x, b := range []byte(invoke.Msg) {
+			//	chart.Insert(invokej, target.Midpos+1+x, b, true)
+			//}
+			writeMsg(&chart, invoke.Msg, invokej, target.Midpos+1)
 
 			for x := invoker.Midpos - 1; x > target.Midpos; x-- {
 				c := invoke.arrow(invoker.Midpos - x)
@@ -273,13 +277,14 @@ func main() {
 			chart.Insert(invokej+1, target.Midpos+1, '<', true)
 			invokej += 2
 		} else { //target.Seqnum > invoker.Seqnu
-			for x, b := range []byte(invoke.Msg) {
-				chart.Insert(invokej+1, target.Midpos+1+4+x, b, true) //note4 对应前面 note3
-			}
-			chart.Insert(invokej, target.Midpos+0, '-', true) //|
-			chart.Insert(invokej, target.Midpos+1, '-', true) //+---.
-			chart.Insert(invokej, target.Midpos+2, '-', true) //|   |
-			chart.Insert(invokej, target.Midpos+3, '-', true) //|<--'
+			//for x, b := range []byte(invoke.Msg) {
+			//	chart.Insert(invokej+1, target.Midpos+1+4+x, b, true) //note4 对应前面 note3
+			//}
+			writeMsg(&chart, invoke.Msg, invokej+1, target.Midpos+1+4) //note4 对应前面 note3
+			chart.Insert(invokej, target.Midpos+0, '-', true)          //|
+			chart.Insert(invokej, target.Midpos+1, '-', true)          //+---.
+			chart.Insert(invokej, target.Midpos+2, '-', true)          //|   |
+			chart.Insert(invokej, target.Midpos+3, '-', true)          //|<--'
 			chart.Insert(invokej, target.Midpos+4, '.', true)
 			chart.Insert(invokej+1, target.Midpos+4, '|', true)
 			chart.Insert(invokej+2, target.Midpos+4, '\'', true)
@@ -298,12 +303,31 @@ func main() {
 		printRectagle(invokej+1, x1, x2, name, &chart)
 		//画生命线
 		for j := 2; j <= invokej+1; j++ {
-			chart.Insert(j, part.Midpos, '|', true)
+			chart.Insert(j, part.Midpos, '|', false)
 		}
 	}
 
 	//for
 	fmt.Println(chart)
+}
+
+func writeMsg(chart *char2d, msg string, row int, offset int) {
+	for x, b := range []byte(msg) {
+		chart.Insert(row, offset+x, b, true)
+	}
+	//TODO
+	/*
+		zhcount := 0
+		for _, b := range msg {
+			if unicode.Is(unicode.Scripts["Han"], b) {
+				zhcount += 1
+			}
+		}
+		offset = len(msg)
+		for i:=0; i<zhcount; i++ {
+		    chart.Insert(row, offset+x, b, false)
+		}
+	*/
 }
 
 //画方框

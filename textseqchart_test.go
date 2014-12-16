@@ -4,6 +4,7 @@ import (
 	"fmt"
 	//"os/exec"
 	"testing"
+	"unicode"
 )
 
 func TestCharset(t *testing.T) {
@@ -37,6 +38,23 @@ func TestCharset(t *testing.T) {
 		bytes5 = append(bytes5, b)
 	}
 	fmt.Printf("bytes5:%q, len(bytes5):%v \n", bytes5, len(bytes5))
+}
+
+func Viewlen(utf8str string) int {
+	c := 0
+	for _, b := range utf8str {
+		if unicode.Is(unicode.Scripts["Han"], b) {
+			c += 2
+		} else {
+			c += 1
+		}
+	}
+	return c
+}
+
+
+func TestViewlen(t *testing.T) {
+    fmt.Printf("viewlen:%v \n", Viewlen("a中文字c"));
 }
 
 /*
