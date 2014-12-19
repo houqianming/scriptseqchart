@@ -1,40 +1,15 @@
 package textseqchart
 
 import (
-	"bufio"
-	"bytes"
+	//"bufio"
+	//"bytes"
 	"fmt"
 	"io"
 	"os"
-	"strings"
-	"unicode"
+	//"strings"
+	//"unicode"
 )
 
-type Participant struct {
-	Name    string
-	Leftpos int
-	Midpos  int
-	Seqnum  int
-}
-
-func (part Participant) String() string {
-	return fmt.Sprintf("%v,%v,%v\n", part.Name, part.Leftpos, part.Midpos)
-}
-
-type Invoke struct {
-	Invoker *Participant
-	Target  *Participant
-	Msg     string
-	IsSync  bool
-	Yops    int
-}
-
-func (invoke Invoke) String() string {
-	if invoke.Invoker != nil && invoke.Target != nil {
-		return fmt.Sprintf("%v -> %v : %v\n", invoke.Invoker.Name, invoke.Target.Name, invoke.Msg)
-	}
-	return fmt.Sprint("no Invoker or Target\n")
-}
 func (invoke Invoke) arrow(index int) byte {
 	var c byte
 	if !invoke.IsSync && index%2 == 0 {
@@ -45,15 +20,8 @@ func (invoke Invoke) arrow(index int) byte {
 	return c
 }
 
-func isParticipantLine(line string) string {
-	if strings.HasPrefix(line, "participant ") {
-		return strings.TrimSpace(string(line[len("participant "):]))
-	}
-	return ""
-}
-
-func parse(file string) (title string, partnames []string, participants map[string]*Participant, invacations []Invoke) {
-	seqdef, err := os.Open(file)
+func BuildFile(out io.Writer, path string) {
+	seqdef, err := os.Open(path)
 	defer seqdef.Close()
 	//fmt.Printf("seqdef=%v, err=%v\n", seqdef, err)
 
@@ -61,156 +29,17 @@ func parse(file string) (title string, partnames []string, participants map[stri
 		fmt.Println(os.Args[1], err)
 		return
 	}
-
-	partnames = make([]string, 0)
-	participants = make(map[string]*Participant)
-	invacations = make([]Invoke, 0)
-	buff := bufio.NewReader(seqdef)
-	seqnum := 0
-	for {
-		line, e := buff.ReadString('\n')
-		if e != nil && io.EOF != e {
-			break
-		}
-		line = strings.TrimSpace(line)
-		if line[0] == '#' {
-			continue
-		}
-
-		if name := isParticipantLine(line); name != "" {
-			seqnum++
-			part := Participant{Name: name, Seqnum: seqnum}
-			partnames = append(partnames, name)
-			participants[name] = &part
-			continue
-		}
-
-		if strings.HasPrefix(line, "title ") {
-			title = strings.TrimSpace(line[5:])
-			continue
-		}
-
-		var isSync bool
-		abm := strings.Split(line, "-->")
-		if len(abm) == 2 {
-			isSync = false
-		} else {
-			abm = strings.Split(line, "->")
-			if len(abm) == 2 {
-				isSync = true
-			} else {
-				fmt.Printf("error format 1: %v", line)
-				return
-			}
-		}
-		bm := strings.Split(abm[1], ":")
-		if len(bm) < 2 {
-			fmt.Println("error format 2	")
-			return
-		}
-		//fmt.Printf("%q \n", bm)
-
-		invoke := Invoke{IsSync: isSync}
-		{
-			name := strings.TrimSpace(abm[0])
-			part, ok := participants[name]
-			if !ok {
-				seqnum++
-				part = &Participant{Name: name, Seqnum: seqnum}
-				partnames = append(partnames, name)
-				participants[name] = part
-			}
-			invoke.Invoker = part
-		}
-
-		{
-			name := strings.TrimSpace(bm[0])
-			part, ok := participants[name]
-			if !ok {
-				seqnum++
-				part = &Participant{Name: name, Seqnum: seqnum}
-				partnames = append(partnames, name)
-				participants[name] = part
-			}
-			invoke.Target = part
-		}
-
-		invoke.Msg = strings.Join(bm[1:], ":")
-		invacations = append(invacations, invoke)
-
-		if io.EOF == e {
-			break
-		}
-	}
-	return
+	Build(out, seqdef)
 }
 
-type char2d struct {
-	bytes [][]byte
-}
-
-func (chart *char2d) Insert(i, j int, b byte, override bool) {
-	leni := len(chart.bytes)
-	if i >= leni {
-		for k := leni; k <= i; k++ {
-			chart.bytes = append(chart.bytes, make([]byte, 0))
-		}
-	}
-	lenj := len(chart.bytes[i])
-	if j >= lenj {
-		for k := lenj; k <= j; k++ {
-			chart.bytes[i] = append(chart.bytes[i], ' ')
-		}
-	}
-	old := chart.bytes[i][j]
-	if (old == '-' && b == '|') || (old == '|' && b == '-') {
-		chart.bytes[i][j] = '+'
-		//fmt.Printf("old=%q, b=%q, res= %q \n", old, b, chart.bytes[i][j] )
-	} else if override || old == ' ' {
-		chart.bytes[i][j] = b
-	}
-}
-
-func (chart char2d) String1() string {
-	var buffer bytes.Buffer
-	for i := 0; i < len(chart.bytes); i++ {
-		buffer.Write(chart.bytes[i])
-		buffer.WriteByte('\n')
-	}
-	return buffer.String()
-}
-func (chart char2d) String2() string {
-	var buffer bytes.Buffer
-	for i := 0; i < len(chart.bytes); i++ {
-		for _, c := range string(chart.bytes[i]) {
-			buffer.WriteRune(c)
-			if unicode.Is(unicode.Scripts["Han"], c) {
-				//因汉字go内部3个字节，文本显示时等宽占2个字符，所以多些一个空格
-				buffer.WriteByte(' ')
-			}
-		}
-		buffer.WriteByte('\n')
-	}
-	return buffer.String()
-}
-func (chart char2d) String() string {
-	return chart.String2()
-}
-
-func Build(path string) {
-	//fmt.Printf("args: %v \n", os.Args)
-	//if len(os.Args) < 2 {
-	//	return
-	//}
-
+func Build(writer io.Writer, reader io.Reader) {
 	var (
 		//title        string
 		partnames    []string
 		participants map[string]*Participant
 		invacations  []Invoke
 	)
-	//_, partnames, participants, invacations = parse(os.Args[1])
-	_, partnames, participants, invacations = parse(path)
+	_, partnames, participants, invacations = parse(reader)
 
 	first := participants[partnames[0]]
 	first.Leftpos = 0
@@ -317,26 +146,14 @@ func Build(path string) {
 	}
 
 	//for
-	fmt.Println(chart)
+	//fmt.Println(chart)
+	fmt.Fprintf(writer, "%v", chart)
 }
 
 func writeMsg(chart *char2d, msg string, row int, offset int) {
 	for x, b := range []byte(msg) {
 		chart.Insert(row, offset+x, b, true)
 	}
-	//TODO
-	/*
-		zhcount := 0
-		for _, b := range msg {
-			if unicode.Is(unicode.Scripts["Han"], b) {
-				zhcount += 1
-			}
-		}
-		offset = len(msg)
-		for i:=0; i<zhcount; i++ {
-		    chart.Insert(row, offset+x, b, false)
-		}
-	*/
 }
 
 //画方框
