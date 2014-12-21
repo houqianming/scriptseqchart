@@ -54,9 +54,14 @@ func parse(reader io.Reader) (title string, partnames []string, participants map
 		if e != nil && io.EOF != e {
 			break
 		}
+		//fmt.Printf("line:%v\n, e:%v\n", line, e)
 		line = strings.TrimSpace(line)
-		if line[0] == '#' {
-			continue
+		if len(line) == 0 || line[0] == '#' {
+			if io.EOF == e {
+				break
+			} else {
+				continue
+			}
 		}
 
 		if name := isParticipantLine(line); name != "" {

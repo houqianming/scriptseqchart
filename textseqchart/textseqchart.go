@@ -48,6 +48,7 @@ func Build(writer io.Writer, reader io.Reader, ishtml bool) {
 		invacations  []Invoke
 	)
 	_, partnames, participants, invacations = parse(reader)
+	//fmt.Printf("\npartnames:%v \nparticipants:%v \ninvacations:%v\n", partnames, participants, invacations)
 
 	first := participants[partnames[0]]
 	first.Leftpos = 0

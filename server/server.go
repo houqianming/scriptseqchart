@@ -22,7 +22,8 @@ func (h Hello) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	} else {
 		w.Header().Set("Content-Type", "text/html")
 		fmt.Fprintf(w, "请输入脚本（->表示方法调用）<br>\n")
-		fmt.Fprintf(w, "<form method=post action=/> <textarea name=script cols=120 rows=20> </textarea><br><input type=submit value=commit> </form>")
+		//fmt.Fprintf(w, "<form method=post action=/> <textarea name=script cols=120 rows=20> </textarea><br><input type=submit value=commit> </form>")
+		fmt.Fprintf(w, "<form action=/> <textarea name=script cols=120 rows=20> </textarea><br><input type=submit value=commit> </form>")
 
 	}
 	//fmt.Fprint(w, "Hello!")
