@@ -52,6 +52,7 @@ func (chart char2d) String2() string {
 			if unicode.Is(unicode.Scripts["Han"], c) {
 				//因汉字go内部3个字节，文本显示时等宽占2个字符，所以多些一个空格
 				buffer.WriteByte(' ')
+				//fmt.Printf("c:%v\n", c)
 			}
 		}
 		buffer.WriteByte('\n')
@@ -72,10 +73,10 @@ func (chart char2d) String3() string {
 			default:
 				buffer.WriteRune(c)
 			}
-
 			if unicode.Is(unicode.Scripts["Han"], c) {
 				//因汉字go内部3个字节，文本显示时等宽占2个字符，所以多写一个空格
 				buffer.WriteString("&nbsp;")
+				//fmt.Printf("c:%v\n", c)
 			}
 		}
 		buffer.WriteString("<br>\n")

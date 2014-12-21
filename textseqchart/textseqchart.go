@@ -20,7 +20,7 @@ func (invoke Invoke) arrow(index int) byte {
 	return c
 }
 
-func BuildFile(out io.Writer, path string) {
+func BuildFile(out io.Writer, path string, ishtml bool) {
 	seqdef, err := os.Open(path)
 	defer seqdef.Close()
 	//fmt.Printf("seqdef=%v, err=%v\n", seqdef, err)
@@ -29,10 +29,18 @@ func BuildFile(out io.Writer, path string) {
 		fmt.Println(os.Args[1], err)
 		return
 	}
-	Build(out, seqdef)
+	Build(out, seqdef, ishtml)
 }
 
-func Build(writer io.Writer, reader io.Reader) {
+func BuildText(writer io.Writer, reader io.Reader) {
+	Build(writer, reader, false)
+}
+
+func BuildHtml(writer io.Writer, reader io.Reader) {
+	Build(writer, reader, true)
+}
+
+func Build(writer io.Writer, reader io.Reader, ishtml bool) {
 	var (
 		//title        string
 		partnames    []string
@@ -147,7 +155,12 @@ func Build(writer io.Writer, reader io.Reader) {
 
 	//for
 	//fmt.Println(chart)
-	fmt.Fprintf(writer, "%v", chart)
+	if ishtml {
+		writer.Write([]byte(chart.String3()))
+		//fmt.Fprintf(writer, "%v", chart)
+	} else {
+		fmt.Fprintf(writer, "%v", chart)
+	}
 }
 
 func writeMsg(chart *char2d, msg string, row int, offset int) {

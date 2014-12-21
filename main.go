@@ -19,7 +19,7 @@ func main() {
 		case "-server":
 			server.Start()
 		default:
-			textseqchart.BuildFile(os.Stdout, os.Args[1])
+			textseqchart.BuildFile(os.Stdout, os.Args[1], false)
 		}
 	default:
 		fmt.Print("error")
