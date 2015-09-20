@@ -61,7 +61,7 @@ func Build(writer io.Writer, reader io.Reader, ishtml bool) {
 		part1 := participants[name1]
 		part2 := participants[name2]
 
-		distance := len(name1)/2 + len(name2)/2 + 2 //两个框的最小距离
+		distance := len(name1)/2 + len(name2)/2 + 3 //两个框的最小距离
 		for j := 0; j < len(invacations); j++ {
 			if invacations[j].Target.Seqnum > invacations[j].Invoker.Seqnum && invacations[j].Target == part2 {
 				msglen := len(invacations[j].Msg) + 2
