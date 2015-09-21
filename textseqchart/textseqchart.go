@@ -69,8 +69,8 @@ func Build(writer io.Writer, reader io.Reader, ishtml bool) {
 			if invoke.Type != "" {
 				if invoke.Invoker == part2	{
 					//begin loop/opt/alt
-					msglen = len(invoke.Msg) + 2 + 5 //@note4
-					msglen = msglen - (part2.Midpos - part1.Midpos)
+					//msglen = len(invoke.Msg) + 2 + 5 //@note4
+					msglen = len(invoke.Type) + 2 //@note4
 				} //else if invoke.Target == part2 {	
 					//end loop/opt/alt
 				//}
