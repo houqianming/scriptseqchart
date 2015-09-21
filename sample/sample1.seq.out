@@ -1,0 +1,71 @@
+args: [./scriptseqchart sample/sample1.seq] 
+invacations: [Aone,0,0
+ -> git/svn,0,0
+ : pull Dockerfile
+ Aone,0,0
+ -> Aone,0,0
+ : build/push image
+ Aone,0,0
+ -> Freedom,0,0
+ :  update base image(appid,image url)
+ Freedom,0,0
+ -> <nil> :  do some thing
+ Freedom,0,0
+ -> Freedom,0,0
+ : batch and rollback control
+ Freedom,0,0
+ -> <nil> :  description
+ Freedom,0,0
+ -> AI,0,0
+ : update container(appid,image url)
+ AI,0,0
+ -> Freedom,0,0
+ :  done
+ <nil> -> Freedom,0,0
+ : 
+ Freedom,0,0
+ -> Freedom,0,0
+ :  test
+ <nil> -> Freedom,0,0
+ : 
+ Aone,0,0
+ -> Aone,0,0
+ : build/push image sdfadfsdfadsf
+ Freedom,0,0
+ -> Aone,0,0
+ :  done
+] 
++----+                             +-------+                                                    +-------+                              +--+
+|Aone|                             |git/svn|                                                    |Freedom|                              |AI|
++-+--+                             +---+---+                                                    +---+---+                              ++-+
+  |                                    |                                                            |                                   |
+  |pull Dockerfile                     |                                                            |                                   |
+  |----------------------------------->|                                                            |                                   |
+  +---.                                |                                                            |                                   |
+  |   |build/push image                |                                                            |                                   |
+  |<--'                                |                                                            |                                   |
+  | update base image(appid,image url) |                                                            |                                   |
+  |------------------------------------+----------------------------------------------------------->|                                   |
+  |                                    |                                                     .------+                                   |
+  |                                    |                                                     | loop +---.                               |
+  |                                    |                                                     |      |   |batch and rollback control     |
+  |                                    |                                                     |      |<--'                               |
+  |                                    |                                                     |  .---+                                   |
+  |                                    |                                                     |  |alt|update container(appid,image url)  |
+  |                                    |                                                     |  |   |---------------------------------->|
+  |                                    |                                                     |  |   | done                              |
+  |                                    |                                                     |  |   |<----------------------------------|
+  |                                    |                                                     |  '---+                                   |
+  |                                    |                                                     |      +---.                               |
+  |                                    |                                                     |      |   | test                          |
+  |                                    |                                                     |      |<--'                               |
+  |                                    |                                                     '------+                                   |
+  +---.                                |                                                            |                                   |
+  |   |build/push image sdfadfsdfadsf  |                                                            |                                   |
+  |<--'                                |                                                            |                                   |
+  | done                               |                                                            |                                   |
+  |<-----------------------------------+------------------------------------------------------------|                                   |
+  |                                    |                                                            |                                   |
++-+--+                             +---+---+                                                    +---+---+                              ++-+
+|Aone|                             |git/svn|                                                    |Freedom|                              |AI|
++----+                             +-------+                                                    +-------+                              +--+

@@ -1,0 +1,19 @@
+participant Aone
+participant git/svn
+participant Freedom
+participant AI
+Aone -> git/svn:pull Dockerfile
+Aone -> Aone:build/push image
+Aone -> Freedom: update base image(appid,image url)
+begin  loop : do some thing
+Freedom -> Freedom:batch and rollback control
+begin alt: description
+Freedom -> AI:update container(appid,image url)
+AI -> Freedom: done
+end alt
+Freedom -> Freedom: test
+end loop 
+Aone -> Aone:build/push image sdfadfsdfadsf
+Freedom -> Aone: done
+
+
